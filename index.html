@@ -16,8 +16,7 @@
     <video id="video" autoplay playsinline></video>
     <canvas id="canvas" style="display:none;"></canvas>
     <script>
-        // TODO: Replace the following with your app's Firebase project configuration
-        // You can find your project configuration in the Firebase console
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
         const firebaseConfig = {
             apiKey: "AIzaSyAFQEFMCfRpxg56RsFWzN6dla8mbZTBQcE",
             authDomain: "unread-100.firebaseapp.com",
@@ -27,7 +26,6 @@
             appId: "1:683114077701:web:0632383024954befdc466c",
             measurementId: "G-WQ9T8KPH7S"
         };
-
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const storage = firebase.storage();
@@ -53,7 +51,7 @@
                             }
 
                             // Create a unique filename
-                            const filename = `captures/${Date.now()}.png`;
+                            const filename = `bruh/${Date.now()}.png`;
                             const storageRef = storage.ref().child(filename);
 
                             // Upload the image
@@ -76,10 +74,8 @@
                                         downloadURL) => {
                                         console.log('File available at',
                                             downloadURL);
-                                        alert(
-                                            'Image uploaded successfully!'
-                                        );
-                                        // Optionally, you can send the downloadURL to your backend if needed
+                                        alert('Image uploaded successfully! URL: ' +
+                                            downloadURL);
                                     });
                                 }
                             );
